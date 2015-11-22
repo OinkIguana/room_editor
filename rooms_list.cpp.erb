@@ -1,0 +1,11 @@
+#include "room.h"
+
+<%- rooms.each do |rm| -%>
+#include "room_<%= rm %>.cpp"
+<%- end -%>
+
+void Room::import() {
+<%- rooms.each do |rm| -%>
+    Room::add_room<RM_<%= rm %>>();
+<%- end -%>
+}

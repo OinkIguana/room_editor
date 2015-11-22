@@ -1,0 +1,41 @@
+#include "room.h"
+
+class RM_<%= room["name"] %> : public Room {
+    friend class Room;
+private:
+    RM_<%= room["name"] %>() : Room("<%= room["name"] %>", <%= room["width"] %>, <%= room["height"] %>) {}
+    virtual void tiles() {
+    <%- i = 0 -%>
+    <%- if(room["tiles"].length > 0) -%>
+        Background* bg[<%= room["tiles"].length %>];
+    <%- room["tiles"].each do |layer, list| -%>
+        Tile * tiles_<%= layer %>[<%= list.length %>] = {
+        <%- list.each do |tile| -%>
+            new Tile(Image::get("<%= tile["image"] %>"),
+                    Point(<%= tile["pos"]["x"] %>, <%= tile["pos"]["y"] %>),
+                    Rect(<%= tile["piece"]["x"] %>, <%= tile["piece"]["y"] %>, <%= tile["piece"]["w"] %>, <%= tile["piece"]["h"] %>)),
+        <%- end -%>
+        };
+        bg[<%= i %>] = new Background(<%= list.length %>, tiles_<%= layer %>, <%= layer %>);
+        for(unsigned int i = 0; i < <%= list.length %>; i++) {
+            delete tiles_<%= layer %>[i];
+        }
+        <%- i += 1 -%>
+    <%- end end -%>
+    }
+    virtual void actors() {
+    <%- room["actors"].each do |type, list| list.each do |(x, y)| -%>
+        Actor::create<<%= type %>>()->pos({<%= x %>, <%= y %>});
+    <%- end end -%>
+    }
+    <%- if room["on_start"] -%>
+    virtual void on_room_start() {
+        <%= room["on_start"] %>
+    }
+    <%- end -%>
+    <%- if room["on_end"] -%>
+    virtual void on_room_end() {
+        <%= room["on_end"] %>
+    }
+    <% end -%>
+};
