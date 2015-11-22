@@ -18,10 +18,11 @@ $font = Gosu::Font.new(16, name: "Courier")
 
 class Editor < Gosu::Window
     def initialize
-        super 1224, 756
+        super 1224, 768
         self.caption = 'Room Editor'
         @pan = {x: 0, y: 0}
         @input = nil
+        @show_grid = true
         @click = {
             left: nil,
             middle: nil,
@@ -99,7 +100,8 @@ class Editor < Gosu::Window
     end
 
     def draw
-        Gosu::draw_rect 0, 0, width, height, Gosu::Color.argb(0xFF_FFFFFF)
+        Gosu::draw_rect(0, 0, width, height, 0xFF_777777)
+        Gosu::draw_rect(-@pan[:x] + 200, -@pan[:y], @gui.width, @gui.height, 0xFF_FFFFFF)
 
         $actors.each do |name,actor|
             if actor[:sprite]
@@ -118,7 +120,16 @@ class Editor < Gosu::Window
         @gui.draw
 
         if self.text_input != nil
-            $font.draw("#{@input[:name]}: #{self.text_input.text.insert(self.text_input.caret_pos, '_')}", 16, 756 - 16, 100, 1, 1, 0xFF_000000)
+            $font.draw("#{@input[:name]}: #{self.text_input.text.insert(self.text_input.caret_pos, '_')}", 16, 768 - 16, 100, 1, 1, 0xFF_000000)
+        end
+
+        if @show_grid
+            (0...@gui.width).step @gui.snap[:x] do |xx|
+                Gosu::draw_line(xx - @pan[:x] + 200, -@pan[:y], 0xFF_AAAAAA, xx - @pan[:x] + 200, -@pan[:y] + @gui.height, 0xFF_AAAAAA)
+            end
+            (0...@gui.height).step @gui.snap[:y] do |yy|
+                Gosu::draw_line(-@pan[:x] + 200, yy - @pan[:y], 0xFF_AAAAAA, -@pan[:x] + 200 + @gui.width, yy - @pan[:y], 0xFF_AAAAAA)
+            end
         end
     end
 
@@ -185,7 +196,7 @@ class Editor < Gosu::Window
                     y: tile["piece"]["y"],
                     w: tile["piece"]["w"],
                     h: tile["piece"]["h"]
-                }}, tile["pos"]["x"], tile["pos"]["x"], depth)
+                }}, tile["pos"]["x"], tile["pos"]["y"], depth.to_i)
             end
         end
     end
@@ -322,6 +333,8 @@ class Editor < Gosu::Window
                 @gui.set_dimensions
             when Gosu::KbP
                 @gui.set_snap
+            when Gosu::KbG
+                @show_grid = !@show_grid
             when Gosu::KbS
                 save
             when Gosu::KbC

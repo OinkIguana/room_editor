@@ -15,8 +15,8 @@ class Gui
         @fg_col = 0xFF_FFFFFF
 
         @name = "<no name>"
-        @width = 0
-        @height = 0
+        @width = 1024
+        @height = 768
         @selected = nil
         @which_type = :actor
         @actor = "<no actor>"
@@ -37,7 +37,7 @@ class Gui
     def set_snap
         $window.start_input("Snap", lambda do |snap|
             return false if snap.count('x') != 1
-            @snap[:x], @snap[:y] = snap.gsub(/[^\dx]/, '').split('x', 2).map {|x| x.to_i}
+            @snap[:x], @snap[:y] = snap.gsub(/[^\dx]/, '').split('x', 2).map {|x| [1, x.to_i.abs].max}
         end)
     end
 
@@ -58,19 +58,23 @@ class Gui
     def raise_depth
         depths = $tiles.keys.map { |x| x.to_i }.sort
         i = 0
-        while depths[i] < @current_depth
-            i += 1
+        if depths.length > 0
+            while i < depths.length - 1 and depths[i] <= @current_depth
+                i += 1
+            end
+            @current_depth = depths[i]
         end
-        @current_depth = depths[i]
     end
 
     def lower_depth
         depths = $tiles.keys.map { |x| x.to_i }.sort.reverse
         i = 0
-        while depths[i] < @current_depth
-            i += 1
+        if depths.length > 0
+            while i < depths.length - 1 and depths[i] >= @current_depth
+                i += 1
+            end
+            @current_depth = depths[i]
         end
-        @current_depth = depths[i]
     end
 
     def set_actor
@@ -137,14 +141,12 @@ class Gui
             when (64+400..64+400+16) # set the snap x/y
                 set_snap
             end
-        when Gosu::MsRight
-
         end
     end
 
     def draw
-        Gosu::draw_rect(0, 0, 200, 756, @bg_col)
-        Gosu::draw_line(200, 0, @border_col, 200, 756, @border_col)
+        Gosu::draw_rect(0, 0, 200, 768, @bg_col)
+        Gosu::draw_line(200, 0, @border_col, 200, 768, @border_col)
 
         $font.draw(@name, 16, 16, 100, 1, 1, @text_col)
         $font.draw("size: #{@width}x#{@height}", 16, 32, 100, 1, 1, @text_col)
