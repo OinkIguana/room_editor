@@ -14,7 +14,7 @@ $sprites = Hash.new
 $actors = Hash.new
 $tiles = Hash.new
 
-$font = Gosu::Font.new(16, name: "Courier")
+$font = Gosu::Font.new(16, name: 'Courier')
 
 class Editor < Gosu::Window
     def initialize
@@ -166,11 +166,11 @@ class Editor < Gosu::Window
                 end
             end
             data = {
-                "name": @gui.name,
-                "width": @gui.width,
-                "height": @gui.height,
-                "actors": act,
-                "tiles": til
+                'name': @gui.name,
+                'width': @gui.width,
+                'height': @gui.height,
+                'actors': act,
+                'tiles': til
             }
             File.open("#{$cpp_project or '.'}/resource/room/#{@gui.name}.json", "w") do |file|
                 file.puts data.to_json
@@ -181,22 +181,22 @@ class Editor < Gosu::Window
 
     def load file # loads a room from a .json File
         room = JSON.parse IO.readlines(file).join
-        @gui.name = room["name"]
-        @gui.width = room["width"]
-        @gui.height = room["width"]
-        room["actors"].each do |type, locations|
+        @gui.name = room['name']
+        @gui.width = room['width']
+        @gui.height = room['height']
+        room['actors'].each do |type, locations|
             locations.each do |(x, y)|
                 add_actor(type, x, y)
             end
         end
-        room["tiles"].each do |depth, tiles|
+        room['tiles'].each do |depth, tiles|
             tiles.each do |tile|
-                add_tile({image: tile["image"], piece: {
-                    x: tile["piece"]["x"],
-                    y: tile["piece"]["y"],
-                    w: tile["piece"]["w"],
-                    h: tile["piece"]["h"]
-                }}, tile["pos"]["x"], tile["pos"]["y"], depth.to_i)
+                add_tile({image: tile['image'], piece: {
+                    x: tile['piece']['x'],
+                    y: tile['piece']['y'],
+                    w: tile['piece']['w'],
+                    h: tile['piece']['h']
+                }}, tile['pos']['x'], tile['pos']['y'], depth.to_i)
             end
         end
     end

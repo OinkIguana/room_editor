@@ -10,7 +10,10 @@ out_dir = ARGV.shift.chomp unless ARGV.empty?
 
 rooms = Array.new
 
+File.delete(*Dir.glob("#{out_dir or Dir.pwd}/room_*.cpp"))
+
 room = JSON.parse '{}'
+
 Dir.glob("#{in_dir or Dir.pwd}/*.json").each do |path|
     room = JSON.parse(IO.readlines(path).join)
     rooms << room['name']

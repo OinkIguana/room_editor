@@ -14,13 +14,13 @@ class Gui
         @text_col = 0xFF_000000
         @fg_col = 0xFF_FFFFFF
 
-        @name = "<no name>"
+        @name = '<no name>'
         @width = 1024
         @height = 768
         @selected = nil
         @which_type = :actor
-        @actor = "<no actor>"
-        @image = "<no image>"
+        @actor = '<no actor>'
+        @image = '<no image>'
         @img = nil
         @current_depth = 0
         @snap = {x: 32, y: 32}
@@ -28,21 +28,21 @@ class Gui
     end
 
     def set_room_name
-        $window.start_input("Room name", lambda do |name|
+        $window.start_input('Room name', lambda do |name|
             return false if name.length == 0
             @name = name.chomp.gsub(/[\s]/, '_')
         end)
     end
 
     def set_snap
-        $window.start_input("Snap", lambda do |snap|
+        $window.start_input('Snap', lambda do |snap|
             return false if snap.count('x') != 1
             @snap[:x], @snap[:y] = snap.gsub(/[^\dx]/, '').split('x', 2).map {|x| [1, x.to_i.abs].max}
         end)
     end
 
     def set_dimensions
-        $window.start_input("Dimensions", lambda do |dimensions|
+        $window.start_input('Dimensions', lambda do |dimensions|
             return false if dimensions.count('x') != 1
             @width, @height = dimensions.gsub(/[^\dx]/, '').split('x', 2).map {|x| x.to_i}
         end)
@@ -154,10 +154,10 @@ class Gui
         Gosu::draw_rect(16, 64, 200 - 32, 200 - 32, @border_col)
         Gosu::draw_rect(17, 65, 200 - 34, 200 - 34, @bg_col)
 
-        if @actor != "<no actor>" and @which_type == :actor
+        if @actor != '<no actor>' and @which_type == :actor
             $font.draw(@actor, 16, 48, 100, 1, 1, @text_col)
             $actors[@actor][:sprite].draw(16, 64, 100)
-        elsif @image != "<no image>" and @which_type == :tile
+        elsif @image != '<no image>' and @which_type == :tile
             $font.draw(@image, 16, 48, 100, 1, 1, @text_col)
             size = 200 - 32
             mid = size / 2
@@ -177,8 +177,8 @@ class Gui
                             0x33_FFFFFF)
         end
         Gosu::draw_rect(16 + (100 - 16) * {actor: 0, tile: 1}[@which_type], 64 + 200 - 32, (200 - 32) / 2, 16, @fg_col)
-        $font.draw("Actor", 16, 64 + 200 - 32, 100, 1, 1, @text_col)
-        $font.draw("Tile", 100, 64 + 200 - 32, 100, 1, 1, @text_col)
+        $font.draw('Actor', 16, 64 + 200 - 32, 100, 1, 1, @text_col)
+        $font.draw('Tile', 100, 64 + 200 - 32, 100, 1, 1, @text_col)
 
         Gosu::draw_rect(16, 64 + 200 + 32, 200 - 32, 200 - 32, @border_col)
         Gosu::draw_rect(17, 64 + 200 + 33, 200 - 34, 200 - 34, @bg_col)
