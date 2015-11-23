@@ -97,6 +97,20 @@ class Editor < Gosu::Window
             end
             @click[:left] = {x: mouse_x, y: mouse_y}
         end
+        if Gosu::button_down? Gosu::KbLeftShift
+            @gui.selected = nil
+            if @gui.which_type == :actor and @click[:left] != nil and @gui.actor != '<no actor>' and under_mouse == nil
+                add_actor(@gui.actor, mouse_x + @pan[:x] - 200, mouse_y + @pan[:y], @gui.snap)
+            elsif @gui.which_type == :tile and @click[:left] != nil and @gui.image != '<no image>' and under_mouse == nil
+                add_tile({image: @gui.image, piece: @gui.piece}, mouse_x + @pan[:x] - 200, mouse_y + @pan[:y], @gui.current_depth, @gui.snap)
+            elsif @click[:right] != nil
+                if(@gui.which_type == :actor)
+                    remove_actor under_mouse
+                else
+                    remove_tile under_mouse
+                end
+            end
+        end
     end
 
     def draw
@@ -270,20 +284,24 @@ class Editor < Gosu::Window
     end
 
     def select_or_create_instance # selects the instance at the mouse position, or creates one if there is not one
-        if under_mouse != nil
-            @gui.selected = under_mouse
-        elsif @gui.actor != '<no actor>'
-            add_actor(@gui.actor, mouse_x + @pan[:x] + 200, mouse_y + @pan[:y], @gui.snap)
-            @gui.selected = {actor: @gui.actor, location: $actors[@gui.actor][:locations].length - 1}
+        if not Gosu::button_down? Gosu::KbLeftShift
+            if under_mouse != nil
+                @gui.selected = under_mouse
+            elsif @gui.actor != '<no actor>'
+                add_actor(@gui.actor, mouse_x + @pan[:x] + 200, mouse_y + @pan[:y], @gui.snap)
+                @gui.selected = {actor: @gui.actor, location: $actors[@gui.actor][:locations].length - 1}
+            end
         end
     end
 
     def select_or_create_tile # selects the tile at the mouse position, or creates one if there is not one
-        if under_mouse != nil
-            @gui.selected = under_mouse
-        elsif @gui.image != '<no image>'
-            add_tile({image: @gui.image, piece: @gui.piece}, mouse_x + @pan[:x] + 200, mouse_y + @pan[:y], @gui.current_depth, @gui.snap)
-            @gui.selected = {depth: @gui.current_depth, which: $tiles[@gui.current_depth].length - 1}
+        if not Gosu::button_down? Gosu::KbLeftShift
+            if under_mouse != nil
+                @gui.selected = under_mouse
+            elsif @gui.image != '<no image>'
+                add_tile({image: @gui.image, piece: @gui.piece}, mouse_x + @pan[:x] + 200, mouse_y + @pan[:y], @gui.current_depth, @gui.snap)
+                @gui.selected = {depth: @gui.current_depth, which: $tiles[@gui.current_depth].length - 1}
+            end
         end
     end
 
