@@ -408,6 +408,7 @@ class Editor < Gosu::Window
     end
 
     def finish_input
+        return cancel_input if self.text_input.text == ''
         if @input[:cb].call self.text_input.text
             @input = nil
             self.text_input = nil

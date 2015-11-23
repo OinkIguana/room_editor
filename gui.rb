@@ -96,7 +96,7 @@ class Gui
             @which_type = :tile
             @selected = nil
         end
-        $window.start_input('Tile (image)', lambda do |str|
+        $window.start_input('Tile (image X,Y WxH)', lambda do |str|
             image, w, h, x, y = nil
             pieces = str.chomp.split(' ', 3)
             pieces.each do |piece|
