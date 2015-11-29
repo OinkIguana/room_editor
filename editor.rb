@@ -60,10 +60,14 @@ class Editor < Gosu::Window
         Dir.glob("#{$cpp_project or '.'}/actor_*.h").each do |file|
             File.readlines(file).each do |line|
                 if line[0...7] == '#Actor:'
-                    name, sprite, depth = line[7..-1].chomp.split ' '
+                    name, sprite, depth, args = line[7..-1].chomp.split ' '
+
+                    depth = 50 if depth == nil
+                    args = 0 if args == nil
                     $actors[name] = {
                         sprite: sprite ? $sprites[sprite][:image] : nil,
                         depth: depth.to_i,
+                        args: args.to_i,
                         locations: Array.new
                     }
                 end
@@ -100,7 +104,7 @@ class Editor < Gosu::Window
         if Gosu::button_down? Gosu::KbLeftShift
             @gui.selected = nil
             if @gui.which_type == :actor and @click[:left] != nil and @gui.actor != '<no actor>' and under_mouse == nil
-                add_actor(@gui.actor, mouse_x + @pan[:x] - 200, mouse_y + @pan[:y], @gui.snap)
+                add_actor(@gui.actor, mouse_x + @pan[:x] - 200, mouse_y + @pan[:y], @gui.args, @gui.snap)
             elsif @gui.which_type == :tile and @click[:left] != nil and @gui.image != '<no image>' and under_mouse == nil
                 add_tile({image: @gui.image, piece: @gui.piece}, mouse_x + @pan[:x] - 200, mouse_y + @pan[:y], @gui.current_depth, @gui.snap)
             elsif @click[:right] != nil
@@ -166,7 +170,11 @@ class Editor < Gosu::Window
             $actors.each do |name, actor|
                 act[name] = Array.new
                 actor[:locations].each do |loc|
-                    act[name] << [loc[:x], loc[:y]].map { |x| x.to_i }
+                    act[name] << {
+                        x: loc[:x].to_i,
+                        y: loc[:y].to_i,
+                        args: loc[:args]
+                    }
                 end
             end
             $tiles.each do |depth, tiles|
@@ -209,8 +217,8 @@ class Editor < Gosu::Window
         @gui.width = room['width']
         @gui.height = room['height']
         room['actors'].each do |type, locations|
-            locations.each do |(x, y)|
-                add_actor(type, x, y)
+            locations.each do |loc|
+                add_actor(type, loc['x'], loc['y'], loc['args'])
             end
         end
         room['tiles'].each do |depth, tiles|
@@ -228,12 +236,16 @@ class Editor < Gosu::Window
         end
     end
 
-    def add_actor actor, xx, yy, snap = {x: 1, y: 1} # adds a new actor at the given position
-        $actors[actor][:locations] << {x: xx - (xx % snap[:x]), y: yy - (yy % snap[:y])}
+    def add_actor actor, xx, yy, args, snap = {x: 1, y: 1} # adds a new actor at the given position
+        $actors[actor][:locations] << {
+            x: xx - (xx % snap[:x]),
+            y: yy - (yy % snap[:y]),
+            args: args
+        }
     end
 
     def move_actor xx, yy, actor, snap = {x: 1, y: 1} # moves an actor to the given position
-        $actors[actor[:actor]][:locations][actor[:location]] = {x: xx - (xx % snap[:x]), y: yy - (yy % snap[:y])}
+        $actors[actor[:actor]][:locations][actor[:location]] = {x: xx - (xx % snap[:x]), y: yy - (yy % snap[:y]), args: $actors[actor[:actor]][:locations][actor[:location]][:args]}
     end
 
     def remove_actor actor # removes an actor
@@ -306,7 +318,7 @@ class Editor < Gosu::Window
             if under_mouse != nil
                 @gui.selected = under_mouse
             elsif @gui.actor != '<no actor>'
-                add_actor(@gui.actor, mouse_x + @pan[:x] - 200, mouse_y + @pan[:y], @gui.snap)
+                add_actor(@gui.actor, mouse_x + @pan[:x] - 200, mouse_y + @pan[:y], @gui.args, @gui.snap)
                 @gui.selected = {actor: @gui.actor, location: $actors[@gui.actor][:locations].length - 1}
             end
         end
@@ -334,6 +346,7 @@ class Editor < Gosu::Window
                 else
                     case id
                     when Gosu::MsLeft
+                        @gui.selected = nil
                         if(@gui.which_type == :actor)
                             select_or_create_instance
                         else
@@ -399,6 +412,11 @@ class Editor < Gosu::Window
                 save
             when Gosu::KbC
                 compile
+            when Gosu::KbQ
+                if Gosu::button_down? Gosu::KbLeftControl
+                    File.delete "#{$cpp_project or '.'}/resource/room/#{@gui.name}.json"
+                    puts "Deleted #{$cpp_project or '.'}/resource/room/#{@gui.name}.json"
+                end
             when Gosu::Kb0
                 @pan = {x: 0, y: 0}
             when Gosu::KbL

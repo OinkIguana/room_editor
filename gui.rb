@@ -4,7 +4,7 @@ require 'rubygems'
 require 'gosu'
 
 class Gui
-    attr_reader :name, :actor, :selected, :snap, :input, :width, :height, :which_type, :current_depth, :image, :piece
+    attr_reader :name, :actor, :selected, :snap, :input, :width, :height, :which_type, :current_depth, :image, :piece, :args
     attr_writer :name, :actor, :selected, :width, :height, :current_depth
 
     def initialize
@@ -20,6 +20,7 @@ class Gui
         @selected = nil
         @which_type = :actor
         @actor = '<no actor>'
+        @args = Array.new
         @image = '<no image>'
         @img = nil
         @current_depth = 0
@@ -83,8 +84,11 @@ class Gui
             @selected = nil
         end
         $window.start_input('Actor', lambda do |actor|
-            if $actors[actor] != nil
+            args = actor.split ' '
+            actor = args.shift
+            if $actors[actor] != nil and $actors[actor][:args] == args.length
                 @actor = actor
+                @args = args
                 return true
             end
             return false
@@ -112,16 +116,19 @@ class Gui
                     image ||= piece
                 end
             end
-            if $images[image] != nil
-                @image = image
-                @img = Gosu::Image.new("#{$cpp_project or '.'}/resource/image/#{$images[@image]}")
+            if $images[image] != nil or @image != '<no image>'
+                if $images[image] != nil
+                    @image = image
+                    @img = Gosu::Image.new("#{$cpp_project or '.'}/resource/image/#{$images[@image]}")
+                end
+                @piece = {x: x || @piece[:x], y: y || @piece[:y], w: w || @piece[:w] || @snap[:x], h: h || @piece[:h] || @snap[:y]}
+                @piece[:h] = [@img.height, @piece[:h]].min
+                @piece[:w] = [@img.width, @piece[:w]].min
+                @piece[:y] = [@img.height - @piece[:h], @piece[:y]].min
+                @piece[:x] = [@img.width - @piece[:w], @piece[:x]].min
+                return true
             end
-            @piece = {x: x || @piece[:x], y: y || @piece[:y], w: w || @piece[:w] || @snap[:x], h: h || @piece[:h] || @snap[:y]}
-            @piece[:h] = [@img.height, @piece[:h]].min
-            @piece[:w] = [@img.width, @piece[:w]].min
-            @piece[:y] = [@img.height - @piece[:h], @piece[:y]].min
-            @piece[:x] = [@img.width - @piece[:w], @piece[:x]].min
-            return true
+            return false
         end)
     end
 
@@ -240,6 +247,7 @@ class Gui
                 $font.draw(@selected[:actor], 16, 64 + 200 + 16, 0, 1, 1, @text_col)
                 $font.draw("X: #{$actors[@selected[:actor]][:locations][@selected[:location]][:x]}", 16, 64 + 200 + 32, 0, 1, 1, @text_col)
                 $font.draw("Y: #{$actors[@selected[:actor]][:locations][@selected[:location]][:y]}", 16, 64 + 200 + 48, 0, 1, 1, @text_col)
+                $font.draw("A: #{$actors[@selected[:actor]][:locations][@selected[:location]][:args]}", 16, 64 + 200 + 64, 0, 1, 1, @text_col)
             else
                 $font.draw("Tile #{@selected[:which]}", 16, 64 + 200 + 16, 0, 1, 1, @text_col)
                 $font.draw("X: #{$tiles[@selected[:depth]][@selected[:which]][:pos][:x]}", 16, 64 + 200 + 32, 0, 1, 1, @text_col)

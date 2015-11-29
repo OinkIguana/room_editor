@@ -24,8 +24,8 @@ private:
     <%- end end -%>
     }
     virtual void actors() {
-    <%- room["actors"].each do |type, list| list.each do |(x, y)| -%>
-        Actor::create<<%= type %>>()->pos({<%= x %>, <%= y %>});
+    <%- room["actors"].each do |type, list| list.each do |loc| -%>
+        Actor::create<<%= type %>>(<%- if loc["args"] != nil -%>"<%= loc["args"].join '","' %>"<%- end -%>)->pos({<%= loc["x"] %>, <%= loc["y"] %>});
     <%- end end -%>
     }
     <%- if room["on_start"] -%>
