@@ -63,7 +63,7 @@ class Editor < Gosu::Window
                     name, sprite, depth = line[7..-1].chomp.split ' '
                     $actors[name] = {
                         sprite: sprite ? $sprites[sprite][:image] : nil,
-                        depth: depth,
+                        depth: depth.to_i,
                         locations: Array.new
                     }
                 end
@@ -120,7 +120,7 @@ class Editor < Gosu::Window
         $actors.each do |name,actor|
             if actor[:sprite]
                 actor[:locations].each do |loc|
-                    actor[:sprite].draw(loc[:x] + 200 - @pan[:x], loc[:y] - @pan[:y], actor[:depth] || 0)
+                    actor[:sprite].draw(loc[:x] + 200 - @pan[:x], loc[:y] - @pan[:y], actor[:depth] || 50)
                 end
             end
         end
@@ -170,13 +170,23 @@ class Editor < Gosu::Window
                 end
             end
             $tiles.each do |depth, tiles|
-                til[depth.to_s] = Array.new
-                tiles.each do |tile|
-                    til[depth.to_s] << {
-                        image: tile[:image_name],
-                        pos: tile[:pos],
-                        piece: tile[:piece]
-                    }
+                if tiles.length > 0
+                    til[depth.to_s] = Array.new
+                    tiles.each do |tile|
+                        til[depth.to_s] << {
+                            image: tile[:image_name],
+                            pos: {
+                                x: tile[:pos][:x].to_i,
+                                y: tile[:pos][:y].to_i
+                            },
+                            piece: {
+                                x: tile[:piece][:x].to_i,
+                                y: tile[:piece][:y].to_i,
+                                w: tile[:piece][:w].to_i,
+                                h: tile[:piece][:h].to_i
+                            }
+                        }
+                    end
                 end
             end
             data = {
@@ -187,7 +197,7 @@ class Editor < Gosu::Window
                 'tiles': til
             }
             File.open("#{$cpp_project or '.'}/resource/room/#{@gui.name}.json", "w") do |file|
-                file.puts data.to_json
+                file.puts JSON.pretty_generate data
             end
             puts "Saved to #{$cpp_project or '.'}/resource/room/#{@gui.name}.json"
         end
@@ -205,12 +215,15 @@ class Editor < Gosu::Window
         end
         room['tiles'].each do |depth, tiles|
             tiles.each do |tile|
-                add_tile({image: tile['image'], piece: {
-                    x: tile['piece']['x'],
-                    y: tile['piece']['y'],
-                    w: tile['piece']['w'],
-                    h: tile['piece']['h']
-                }}, tile['pos']['x'], tile['pos']['y'], depth.to_i)
+                add_tile({
+                    image: tile['image'],
+                    piece: {
+                        x: tile['piece']['x'].to_i,
+                        y: tile['piece']['y'].to_i,
+                        w: tile['piece']['w'].to_i,
+                        h: tile['piece']['h'].to_i
+                    }
+                }, tile['pos']['x'].to_i, tile['pos']['y'].to_i, depth.to_i)
             end
         end
     end
@@ -238,7 +251,12 @@ class Editor < Gosu::Window
                 tileable: true,
                 rect: [tile[:piece][:x], tile[:piece][:y], tile[:piece][:w], tile[:piece][:h]]
             }),
-            piece: tile[:piece],
+            piece: {
+                x: tile[:piece][:x],
+                y: tile[:piece][:y],
+                w: tile[:piece][:w],
+                h: tile[:piece][:h]
+            },
             pos: {x: xx - (xx % snap[:x]), y: yy - (yy % snap[:y])}
         }
     end
@@ -288,7 +306,7 @@ class Editor < Gosu::Window
             if under_mouse != nil
                 @gui.selected = under_mouse
             elsif @gui.actor != '<no actor>'
-                add_actor(@gui.actor, mouse_x + @pan[:x] + 200, mouse_y + @pan[:y], @gui.snap)
+                add_actor(@gui.actor, mouse_x + @pan[:x] - 200, mouse_y + @pan[:y], @gui.snap)
                 @gui.selected = {actor: @gui.actor, location: $actors[@gui.actor][:locations].length - 1}
             end
         end
@@ -299,7 +317,7 @@ class Editor < Gosu::Window
             if under_mouse != nil
                 @gui.selected = under_mouse
             elsif @gui.image != '<no image>'
-                add_tile({image: @gui.image, piece: @gui.piece}, mouse_x + @pan[:x] + 200, mouse_y + @pan[:y], @gui.current_depth, @gui.snap)
+                add_tile({image: @gui.image, piece: @gui.piece}, mouse_x + @pan[:x] - 200, mouse_y + @pan[:y], @gui.current_depth, @gui.snap)
                 @gui.selected = {depth: @gui.current_depth, which: $tiles[@gui.current_depth].length - 1}
             end
         end
@@ -337,6 +355,30 @@ class Editor < Gosu::Window
                 @gui.raise_depth
             when Gosu::KbPageDown
                 @gui.lower_depth
+            when Gosu::KbUp
+                if Gosu::button_down? Gosu::KbLeftShift
+                    @gui.contract_tile_ver
+                else
+                    @gui.shift_tile_up
+                end
+            when Gosu::KbDown
+                if Gosu::button_down? Gosu::KbLeftShift
+                    @gui.expand_tile_ver
+                else
+                    @gui.shift_tile_down
+                end
+            when Gosu::KbLeft
+                if Gosu::button_down? Gosu::KbLeftShift
+                    @gui.contract_tile_hor
+                else
+                    @gui.shift_tile_left
+                end
+            when Gosu::KbRight
+                if Gosu::button_down? Gosu::KbLeftShift
+                    @gui.expand_tile_hor
+                else
+                    @gui.shift_tile_right
+                end
             when Gosu::KbD
                 @gui.set_depth
             when Gosu::KbA
