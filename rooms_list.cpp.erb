@@ -6,6 +6,6 @@
 
 void Room::import() {
 <%- rooms.each do |rm| -%>
-    Room::add_room<RM_<%= rm %>>();
+    Room::add_room(new RM_<%= rm %>());
 <%- end -%>
 }
