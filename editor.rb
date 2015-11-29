@@ -135,12 +135,6 @@ class Editor < Gosu::Window
             end
         end
 
-        @gui.draw
-
-        if self.text_input != nil
-            $font.draw("#{@input[:name]}: #{self.text_input.text.insert(self.text_input.caret_pos, '_')}", 16, 768 - 16, 100, 1, 1, 0xFF_000000)
-        end
-
         if @show_grid
             (0...@gui.width).step @gui.snap[:x] do |xx|
                 Gosu::draw_line(xx - @pan[:x] + 200, -@pan[:y], 0xFF_AAAAAA, xx - @pan[:x] + 200, -@pan[:y] + @gui.height, 0xFF_AAAAAA)
@@ -148,6 +142,12 @@ class Editor < Gosu::Window
             (0...@gui.height).step @gui.snap[:y] do |yy|
                 Gosu::draw_line(-@pan[:x] + 200, yy - @pan[:y], 0xFF_AAAAAA, -@pan[:x] + 200 + @gui.width, yy - @pan[:y], 0xFF_AAAAAA)
             end
+        end
+
+        @gui.draw
+
+        if self.text_input != nil
+            $font.draw("#{@input[:name]}: #{self.text_input.text.insert(self.text_input.caret_pos, '_')}", 16, 768 - 16, 100, 1, 1, 0xFF_000000)
         end
     end
 
@@ -391,6 +391,16 @@ class Editor < Gosu::Window
                     @gui.expand_tile_hor
                 else
                     @gui.shift_tile_right
+                end
+            when Gosu::KbF1
+                puts Dir.glob("#{$cpp_project or '.'}/resource/room/*.json")
+            when Gosu::KbF2
+                $actors.each do |name,|
+                    puts name
+                end
+            when Gosu::KbF3
+                $images.each do |name,|
+                    puts name
                 end
             when Gosu::KbD
                 @gui.set_depth
