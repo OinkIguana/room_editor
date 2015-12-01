@@ -7,7 +7,6 @@ require 'gosu'
 require_relative 'gui'
 
 $cpp_project = ARGV.shift.chomp unless ARGV.empty?
-$cpp_project ||= 3
 
 $images = Hash.new
 $sprites = Hash.new
