@@ -28,9 +28,12 @@ private:
         Actor::create<<%= type %>>(<%- if loc["args"] and loc["args"].length > 0 -%>"<%= loc["args"].join '","' %>"<%- end -%>)->pos({<%= loc["x"] %>, <%= loc["y"] %>});
     <%- end end -%>
     }
-    <%- if room["on_start"] -%>
+    <%- if room["on_start"] or room["on_step"]-%>
     virtual void on_room_start() {
         <%= room["on_start"] %>
+        <%- if room["on_step"] -%>
+        RPG::on_step([&] {<%= room["on_step"] %>});
+        <%- end -%>
     }
     <%- end -%>
     <%- if room["on_end"] -%>
@@ -38,4 +41,9 @@ private:
         <%= room["on_end"] %>
     }
     <% end -%>
+    <%- if room["properties"]
+            room["properties"].each do |prop| -%>
+    <%= prop %>
+    <%-     end
+        end -%>
 };

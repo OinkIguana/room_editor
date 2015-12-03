@@ -27,6 +27,10 @@ class Editor < Gosu::Window
             middle: nil,
             right: nil
         }
+        @start = ''
+        @step = ''
+        @end = ''
+        @properties = Array.new
 
         Dir.glob("#{$cpp_project or '.'}/*.image").each do |file|
             File.readlines(file).each do |line|
@@ -136,17 +140,17 @@ class Editor < Gosu::Window
 
         if @show_grid
             (0...@gui.width).step @gui.snap[:x] do |xx|
-                Gosu::draw_line(xx - @pan[:x] + 200, -@pan[:y], 0xFF_AAAAAA, xx - @pan[:x] + 200, -@pan[:y] + @gui.height, 0xFF_AAAAAA)
+                Gosu::draw_line(xx - @pan[:x] + 200, -@pan[:y], 0xFF_AAAAAA, xx - @pan[:x] + 200, -@pan[:y] + @gui.height, 0xFF_AAAAAA, 1000)
             end
             (0...@gui.height).step @gui.snap[:y] do |yy|
-                Gosu::draw_line(-@pan[:x] + 200, yy - @pan[:y], 0xFF_AAAAAA, -@pan[:x] + 200 + @gui.width, yy - @pan[:y], 0xFF_AAAAAA)
+                Gosu::draw_line(-@pan[:x] + 200, yy - @pan[:y], 0xFF_AAAAAA, -@pan[:x] + 200 + @gui.width, yy - @pan[:y], 0xFF_AAAAAA, 1000)
             end
         end
 
         @gui.draw
 
         if self.text_input != nil
-            $font.draw("#{@input[:name]}: #{self.text_input.text.insert(self.text_input.caret_pos, '_')}", 16, 768 - 16, 100, 1, 1, 0xFF_000000)
+            $font.draw("#{@input[:name]}: #{self.text_input.text.insert(self.text_input.caret_pos, '_')}", 16, 768 - 16, 1000, 1, 1, 0xFF_000000)
         end
     end
 
@@ -167,7 +171,7 @@ class Editor < Gosu::Window
             act = Hash.new
             til = Hash.new
             $actors.each do |name, actor|
-                act[name] = Array.new
+                act[name] = Array.new unless actor[:locations].length == 0
                 actor[:locations].each do |loc|
                     act[name] << {
                         x: loc[:x].to_i,
@@ -177,23 +181,21 @@ class Editor < Gosu::Window
                 end
             end
             $tiles.each do |depth, tiles|
-                if tiles.length > 0
-                    til[depth.to_s] = Array.new
-                    tiles.each do |tile|
-                        til[depth.to_s] << {
-                            image: tile[:image_name],
-                            pos: {
-                                x: tile[:pos][:x].to_i,
-                                y: tile[:pos][:y].to_i
-                            },
-                            piece: {
-                                x: tile[:piece][:x].to_i,
-                                y: tile[:piece][:y].to_i,
-                                w: tile[:piece][:w].to_i,
-                                h: tile[:piece][:h].to_i
-                            }
+                til[depth.to_s] = Array.new unless tiles.length == 0
+                tiles.each do |tile|
+                    til[depth.to_s] << {
+                        image: tile[:image_name],
+                        pos: {
+                            x: tile[:pos][:x].to_i,
+                            y: tile[:pos][:y].to_i
+                        },
+                        piece: {
+                            x: tile[:piece][:x].to_i,
+                            y: tile[:piece][:y].to_i,
+                            w: tile[:piece][:w].to_i,
+                            h: tile[:piece][:h].to_i
                         }
-                    end
+                    }
                 end
             end
             data = {
@@ -201,7 +203,11 @@ class Editor < Gosu::Window
                 'width': @gui.width,
                 'height': @gui.height,
                 'actors': act,
-                'tiles': til
+                'tiles': til,
+                'on_start': @start,
+                'on_step': @step,
+                'on_end': @end,
+                'properties': @properties
             }
             File.open("#{$cpp_project or '.'}/resource/room/#{@gui.name}.json", "w") do |file|
                 file.puts JSON.pretty_generate data
@@ -233,6 +239,10 @@ class Editor < Gosu::Window
                 }, tile['pos']['x'].to_i, tile['pos']['y'].to_i, depth.to_i)
             end
         end
+        @start = room['on_start']
+        @step = room['on_step']
+        @end = room['on_end']
+        @properties = room['properties']
     end
 
     def add_actor actor, xx, yy, args, snap = {x: 1, y: 1} # adds a new actor at the given position

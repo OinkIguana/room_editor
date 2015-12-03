@@ -204,18 +204,18 @@ class Gui
     end
 
     def draw
-        Gosu::draw_rect(0, 0, 200, 768, @bg_col)
-        Gosu::draw_line(200, 0, @border_col, 200, 768, @border_col)
+        Gosu::draw_rect(0, 0, 200, 768, @bg_col, 1000)
+        Gosu::draw_line(200, 0, @border_col, 200, 768, @border_col, 1000)
 
-        $font.draw(@name, 16, 16, 0, 1, 1, @text_col)
-        $font.draw("size: #{@width}x#{@height}", 16, 32, 0, 1, 1, @text_col)
+        $font.draw(@name, 16, 16, 1000, 1, 1, @text_col)
+        $font.draw("size: #{@width}x#{@height}", 16, 32, 1000, 1, 1, @text_col)
 
-        Gosu::draw_rect(16, 64, 200 - 32, 200 - 32, @border_col)
-        Gosu::draw_rect(17, 65, 200 - 34, 200 - 34, @bg_col)
+        Gosu::draw_rect(16, 64, 200 - 32, 200 - 32, @border_col, 1000)
+        Gosu::draw_rect(17, 65, 200 - 34, 200 - 34, @bg_col, 1000)
 
         if @actor != '<no actor>' and @which_type == :actor
             $font.draw(@actor, 16, 48, 0, 1, 1, @text_col)
-            $actors[@actor][:sprite].draw(16, 64, 0)
+            $actors[@actor][:sprite].draw(16, 64, 1000)
         elsif @image != '<no image>' and @which_type == :tile
             $font.draw(@image, 16, 48, 0, 1, 1, @text_col)
             size = 200 - 32
@@ -228,38 +228,38 @@ class Gui
             pw = [size - xx, @img.width - px].min
             ph = [size - yy, @img.height - py].min
 
-            @img.subimage(px, py, pw, ph).draw(16 + xx, 64 + yy, 0)
+            @img.subimage(px, py, pw, ph).draw(16 + xx, 64 + yy, 1000)
             Gosu::draw_rect(16 + [mid - @piece[:w] / 2, 0].max,
                             64 + [mid - @piece[:h] / 2, 0].max,
                             [size, @piece[:w]].min,
                             [size, @piece[:h]].min,
-                            0x33_FFFFFF)
+                            0x33_FFFFFF, 1000)
         end
-        Gosu::draw_rect(16 + (100 - 16) * {actor: 0, tile: 1}[@which_type], 64 + 200 - 32, (200 - 32) / 2, 16, @fg_col)
-        $font.draw('Actor', 16, 64 + 200 - 32, 0, 1, 1, @text_col)
-        $font.draw('Tile', 100, 64 + 200 - 32, 0, 1, 1, @text_col)
+        Gosu::draw_rect(16 + (100 - 16) * {actor: 0, tile: 1}[@which_type], 64 + 200 - 32, (200 - 32) / 2, 16, @fg_col, 1000)
+        $font.draw('Actor', 16, 64 + 200 - 32, 1000, 1, 1, @text_col)
+        $font.draw('Tile', 100, 64 + 200 - 32, 1000, 1, 1, @text_col)
 
-        Gosu::draw_rect(16, 64 + 200 + 32, 200 - 32, 200 - 32, @border_col)
-        Gosu::draw_rect(17, 64 + 200 + 33, 200 - 34, 200 - 34, @bg_col)
+        Gosu::draw_rect(16, 64 + 200 + 32, 200 - 32, 200 - 32, @border_col, 1000)
+        Gosu::draw_rect(17, 64 + 200 + 33, 200 - 34, 200 - 34, @bg_col, 1000)
 
         if @selected != nil
             if @which_type == :actor
-                $font.draw(@selected[:actor], 16, 64 + 200 + 16, 0, 1, 1, @text_col)
-                $font.draw("X: #{$actors[@selected[:actor]][:locations][@selected[:location]][:x]}", 16, 64 + 200 + 32, 0, 1, 1, @text_col)
-                $font.draw("Y: #{$actors[@selected[:actor]][:locations][@selected[:location]][:y]}", 16, 64 + 200 + 48, 0, 1, 1, @text_col)
-                $font.draw("A: #{$actors[@selected[:actor]][:locations][@selected[:location]][:args]}", 16, 64 + 200 + 64, 0, 1, 1, @text_col)
+                $font.draw(@selected[:actor], 16, 64 + 200 + 16, 1000, 1, 1, @text_col)
+                $font.draw("X: #{$actors[@selected[:actor]][:locations][@selected[:location]][:x]}", 16, 64 + 200 + 32, 1000, 1, 1, @text_col)
+                $font.draw("Y: #{$actors[@selected[:actor]][:locations][@selected[:location]][:y]}", 16, 64 + 200 + 48, 1000, 1, 1, @text_col)
+                $font.draw("A: #{$actors[@selected[:actor]][:locations][@selected[:location]][:args]}", 16, 64 + 200 + 64, 1000, 1, 1, @text_col)
             else
-                $font.draw("Tile #{@selected[:which]}", 16, 64 + 200 + 16, 0, 1, 1, @text_col)
-                $font.draw("X: #{$tiles[@selected[:depth]][@selected[:which]][:pos][:x]}", 16, 64 + 200 + 32, 0, 1, 1, @text_col)
-                $font.draw("Y: #{$tiles[@selected[:depth]][@selected[:which]][:pos][:y]}", 16, 64 + 200 + 48, 0, 1, 1, @text_col)
-                $font.draw("Z: #{@current_depth}", 16, 64 + 200 + 64, 0, 1, 1, @text_col)
+                $font.draw("Tile #{@selected[:which]}", 16, 64 + 200 + 16, 1000, 1, 1, @text_col)
+                $font.draw("X: #{$tiles[@selected[:depth]][@selected[:which]][:pos][:x]}", 16, 64 + 200 + 32, 1000, 1, 1, @text_col)
+                $font.draw("Y: #{$tiles[@selected[:depth]][@selected[:which]][:pos][:y]}", 16, 64 + 200 + 48, 1000, 1, 1, @text_col)
+                $font.draw("Z: #{@current_depth}", 16, 64 + 200 + 64, 1000, 1, 1, @text_col)
             end
         else
-            $font.draw('<none selected>', 16, 64 + 200 + 16, 0, 1, 1, @text_col)
+            $font.draw('<none selected>', 16, 64 + 200 + 16, 1000, 1, 1, @text_col)
         end
 
-        $font.draw("Snap: #{@snap[:x]}x#{@snap[:y]}", 16, 64 + 200 + 200, 0, 1, 1, @text_col)
+        $font.draw("Snap: #{@snap[:x]}x#{@snap[:y]}", 16, 64 + 200 + 200, 1000, 1, 1, @text_col)
 
-        $font.draw("Depth: #{@current_depth}", 16, 64 + 200 + 200 + 16, 0, 1, 1, @text_col)
+        $font.draw("Depth: #{@current_depth}", 16, 64 + 200 + 200 + 16, 1000, 1, 1, @text_col)
     end
 end
