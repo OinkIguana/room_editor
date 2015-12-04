@@ -4,7 +4,7 @@ class RM_<%= room["name"] %> : public Room {
     friend class Room;
 private:
     RM_<%= room["name"] %>() : Room("<%= room["name"] %>", <%= room["width"] %>, <%= room["height"] %>) {}
-    virtual void tiles() {
+    virtual void tiles() override {
     <%- i = 0 -%>
     <%- if(room["tiles"].length > 0) -%>
         Background* bg[<%= room["tiles"].length %>];
@@ -23,21 +23,23 @@ private:
         <%- i += 1 -%>
     <%- end end -%>
     }
-    virtual void actors() {
+    virtual void actors() override {
     <%- room["actors"].each do |type, list| list.each do |loc| -%>
         Actor::create<<%= type %>>(<%- if loc["args"] and loc["args"].length > 0 -%>"<%= loc["args"].join '","' %>"<%- end -%>)->pos({<%= loc["x"] %>, <%= loc["y"] %>});
     <%- end end -%>
     }
-    <%- if room["on_start"] or room["on_step"]-%>
-    virtual void on_room_start() {
+    <%- if room["on_start"] -%>
+    virtual void on_room_start() override {
         <%= room["on_start"] %>
-        <%- if room["on_step"] -%>
-        RPG::on_step([&] {<%= room["on_step"] %>});
-        <%- end -%>
+    }
+    <%- end -%>
+    <%- if room["on_step"] -%>
+    virtual void on_step() override {
+        <%= room["on_step"] %>
     }
     <%- end -%>
     <%- if room["on_end"] -%>
-    virtual void on_room_end() {
+    virtual void on_room_end() override {
         <%= room["on_end"] %>
     }
     <% end -%>
