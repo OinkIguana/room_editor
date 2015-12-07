@@ -12,6 +12,7 @@ $images = Hash.new
 $sprites = Hash.new
 $actors = Hash.new
 $tiles = Hash.new
+$depths = Array.new
 
 $font = Gosu::Font.new(16, name: 'Courier')
 
@@ -133,8 +134,10 @@ class Editor < Gosu::Window
         end
 
         $tiles.each do |depth,tiles|
-            tiles.each do |tile|
-                tile[:img].draw(tile[:pos][:x] + 200 - @pan[:x], tile[:pos][:y] - @pan[:y], depth.to_i)
+            if $depths[depth] != false
+                tiles.each do |tile|
+                    tile[:img].draw(tile[:pos][:x] + 200 - @pan[:x], tile[:pos][:y] - @pan[:y], depth.to_i)
+                end
             end
         end
 
@@ -411,6 +414,9 @@ class Editor < Gosu::Window
                 $images.each do |name,|
                     puts name
                 end
+            when Gosu::KbH
+                $depths[@gui.current_depth] = true if $depths[@gui.current_depth] == nil
+                $depths[@gui.current_depth] = !$depths[@gui.current_depth]
             when Gosu::KbD
                 @gui.set_depth
             when Gosu::KbA
